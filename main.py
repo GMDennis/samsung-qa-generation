@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_dir", default="../ex3/korean-vae", type=str)
     parser.add_argument("--epochs", default=300, type=int)
     parser.add_argument("--lr", default=1e-3, type=float, help="lr")
-    parser.add_argument("--batch_size", default=32, type=int, help="batch_size")
+    parser.add_argument("--batch_size", default=16, type=int, help="batch_size")
     parser.add_argument("--weight_decay", default=0.0, type=float, help="weight decay")
     parser.add_argument("--clip", default=5.0, type=float, help="max grad norm")
 
