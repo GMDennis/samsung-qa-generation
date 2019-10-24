@@ -258,7 +258,7 @@ class AnswerDecoder(nn.Module):
         batch_size, max_c_len = c_ids.size()
         c_mask, c_lengths = return_mask_lengths(c_ids)
 
-        H = self.embedding(c_ids)
+        H = self.embedding(c_ids, c_mask)
         U = init_state.unsqueeze(1).repeat(1, max_c_len, 1)
         G = torch.cat([H, U, H * U, torch.abs(H - U)], dim=-1)
         M, _ = self.context_lstm(G, c_lengths)
@@ -314,7 +314,7 @@ class ContextEncoderforQG(nn.Module):
 
     def forward(self, c_ids, a_ids):
         c_mask, c_lengths = return_mask_lengths(c_ids)
-        c_embeddings = self.embedding(c_ids, a_ids)
+        c_embeddings = self.embedding(c_ids, c_mask, a_ids)
         c_outputs, _ = self.context_lstm(c_embeddings, c_lengths)
         # attention
         mask = torch.matmul(c_mask.unsqueeze(2), c_mask.unsqueeze(1))
@@ -329,7 +329,7 @@ class ContextEncoderforQG(nn.Module):
 
 class QuestionDecoder(nn.Module):
     def __init__(self, sos_id, eos_id,
-                 embedding, emsize,
+                 embedding, contextualized_embedding, emsize,
                  nhidden, ntokens, nlayers,
                  dropout=0.0,
                  max_q_len=64):
@@ -345,7 +345,7 @@ class QuestionDecoder(nn.Module):
         # this max_len include sos eos
         self.max_q_len = max_q_len
 
-        self.context_lstm = ContextEncoderforQG(embedding, emsize,
+        self.context_lstm = ContextEncoderforQG(contextualized_embedding, emsize,
                                                 nhidden // 2, nlayers, dropout)
 
         self.question_lstm = CustomLSTM(input_size=emsize,
@@ -524,7 +524,10 @@ class DiscreteVAE(nn.Module):
         max_q_len = args.max_q_len
 
         embedding = Embedding(bert_model)
+        contextualized_embedding = ContextualizedEmbedding(bert_model)
         for param in embedding.parameters():
+            param.requires_grad = False
+        for param in contextualized_embedding.parameters():
             param.requires_grad = False
 
         self.posterior_encoder = PosteriorEncoder(embedding, emsize,
@@ -536,12 +539,12 @@ class DiscreteVAE(nn.Module):
                                           enc_nhidden, enc_nlayers,
                                           nz, nzdim, enc_dropout)
 
-        self.answer_decoder = AnswerDecoder(embedding, emsize,
+        self.answer_decoder = AnswerDecoder(contextualized_embedding, emsize,
                                             dec_a_nhidden, dec_a_nlayers,
                                             dec_a_dropout)
 
         self.question_decoder = QuestionDecoder(sos_id, eos_id,
-                                                embedding, emsize,
+                                                embedding, contextualized_embedding, emsize,
                                                 dec_q_nhidden, ntokens, dec_q_nlayers,
                                                 dec_q_dropout,
                                                 max_q_len)
