@@ -85,6 +85,20 @@ def main(args):
                                 all_results[j].real_answer,
                                 all_results[j].posterior_question,
                                 all_results[j].posterior_answer)
+
+            if j % 100 == 0:
+                print('###################### real questions\n')
+                print(all_results[j].real_question)
+                print(all_results[j].real_answer)
+                print('###################### generated prior questions\n')
+                print(all_results[j].posterior_question)
+                print(all_results[j].posterior_answer)
+
+                print('###################### generated prior questions\n')
+                print(all_results[j].prior_question)
+                print(all_results[j].prior_answer)
+
+
             metadata.append(str)
 
             mat.append(all_results[j].prior_z_prob.view(-1))
@@ -102,26 +116,26 @@ if __name__ == "__main__":
     parser.add_argument('--debug', dest='debug', action='store_true')
     parser.add_argument('--train_dir', default='../data/KorQuAD_v1.0_train.json')
     parser.add_argument('--dev_dir', default='../data/KorQuAD_v1.0_dev.json')
-    parser.add_argument("--max_c_len", default=384, type=int, help="max context length")
+    parser.add_argument("--max_c_len", default=512, type=int, help="max context length")
     parser.add_argument("--max_q_len", default=64, type=int, help="max query length")
 
     parser.add_argument("--model_dir", default="../ex3/korean-vae", type=str)
     parser.add_argument("--epochs", default=300, type=int)
     parser.add_argument("--lr", default=1e-3, type=float, help="lr")
-    parser.add_argument("--batch_size", default=16, type=int, help="batch_size")
+    parser.add_argument("--batch_size", default=8, type=int, help="batch_size")
     parser.add_argument("--weight_decay", default=0.0, type=float, help="weight decay")
     parser.add_argument("--clip", default=5.0, type=float, help="max grad norm")
 
     parser.add_argument("--bert_model", default='bert-base-multilingual-cased', type=str)
     parser.add_argument('--enc_nhidden', type=int, default=600)
     parser.add_argument('--enc_nlayers', type=int, default=2)
-    parser.add_argument('--enc_dropout', type=float, default=0.2)
+    parser.add_argument('--enc_dropout', type=float, default=0.0)
     parser.add_argument('--dec_a_nhidden', type=int, default=300)
     parser.add_argument('--dec_a_nlayers', type=int, default=1)
-    parser.add_argument('--dec_a_dropout', type=float, default=0.2)
+    parser.add_argument('--dec_a_dropout', type=float, default=0.0)
     parser.add_argument('--dec_q_nhidden', type=int, default=600)
     parser.add_argument('--dec_q_nlayers', type=int, default=2)
-    parser.add_argument('--dec_q_dropout', type=float, default=0.3)
+    parser.add_argument('--dec_q_dropout', type=float, default=0.0)
     parser.add_argument('--nz', type=int, default=20)
     parser.add_argument('--nzdim', type=int, default=10)
 
